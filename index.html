@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shayari Explorer | Timeless Urdu Poetry</title>
+    <!-- Load Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Fonts: Playfair Display (for titles), Inter (for body) -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Load Font Awesome Icons (CRITICAL for the characters/icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* Define New Theme Colors */
+        :root {
+            --color-primary: #0f376a; /* Deep Sapphire Blue */
+            --color-accent: #7c51d9; /* Amethyst Purple */
+            --color-light-bg: #f8f9fa;
+            --color-dark-bg: #161726;
+            /* CRITICAL CONTRAST FIX: Define dark text color for light mode */
+            --color-light-text: #111827; /* Near black */
+        }
+
+        /* --- 1. Global & Typography --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-light-bg); 
+            color: var(--color-light-text); /* Use high-contrast color for main body text */
+            transition: background-color 0.5s, color 0.5s;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Dark Mode Configuration (Deep Charcoal/Midnight Blue) */
+        body.dark {
+            background-color: var(--color-dark-bg); 
+            color: #e2e8f0;
+        }
+        
+        /* --- 2. Glassmorphism Effect --- */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4); 
+            box-shadow: 0 8px 30px 0 rgba(15, 55, 106, 0.15); 
+            transition: all 0.3s ease-in-out;
+            cursor: pointer; /* Indicate interactivity for double-click */
+        }
+        .glass-card:hover {
+            box-shadow: 0 12px 40px 0 rgba(15, 55, 106, 0.25);
+            transform: translateY(-2px); 
+        }
+
+        /* Dark Mode Glass */
+        body.dark .glass-card {
+            background: rgba(30, 31, 48, 0.65); 
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(200, 200, 200, 0.6);
+            color: var(--color-light-text); /* Input text must be dark in light mode */
+            transition: border-color 0.3s;
+        }
+        .glass-input:focus {
+            border-color: var(--color-accent); 
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 0 0 3px rgba(124, 81, 217, 0.3);
+        }
+        body.dark .glass-input {
+            background: rgba(40, 41, 60, 0.9);
+            color: #e2e8f0;
+        }
+        body.dark .glass-input::placeholder {
+            color: #94a3b8; /* Lighter placeholder in dark mode */
+        }
+
+
+        /* --- 3. Background Art & Overlay --- */
+        .background-art {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Light Mode Gradient: Soft Teal to Light Blue */
+            background: linear-gradient(135deg, #e3f2fd 0%, #f0f4f8 100%);
+            z-index: -2;
+        }
+        .dark .background-art {
+            /* Dark Mode Gradient: Deep Charcoal to Midnight Blue */
+            background: linear-gradient(135deg, #1e202f 0%, #161726 100%);
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backdrop-filter: blur(4px); 
+            -webkit-backdrop-filter: blur(4px);
+            z-index: -1;
+        }
+
+        /* Favorite Button */
+        .fav-active {
+            color: #ef4444; 
+        }
+
+        /* CRITICAL FIX: High contrast text for Shayari of the Day and Card Text */
+        #shayari-of-day .light-mode-text-fix, 
+        #shayari-grid .light-mode-text-fix {
+            color: var(--color-light-text); /* Always dark text in light mode */
+            font-weight: 600; /* Semi-bold text for better visibility */
+        }
+        
+        body.dark #shayari-of-day .light-mode-text-fix,
+        body.dark #shayari-grid .light-mode-text-fix {
+             color: #e2e8f0; /* Light text in dark mode */
+             font-weight: 400; /* Regular weight in dark mode */
+        }
+
+        /* New class for top attribution */
+        .top-attribution {
+            color: #525252; /* Darker gray for contrast in light mode */
+            background-color: #e5e7eb; /* Subtle light background */
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 600; /* font-semibold */
+            margin-bottom: 20px;
+        }
+        body.dark .top-attribution {
+            color: #9ca3af; /* Light gray in dark mode */
+            background-color: #272733; /* Dark background */
+        }
+
+        /* New Welcome Message Styling (Container) */
+        #welcome-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        
+        #welcome-message {
+            background-color: rgba(124, 81, 217, 0.1); /* Light purple background */
+            color: var(--color-primary);
+            border-left: 5px solid var(--color-accent);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            flex-grow: 1; /* Takes up available space */
+            display: flex; /* To align the icon and text */
+            align-items: center;
+            margin-right: 16px; /* Space between message and button */
+        }
+        body.dark #welcome-message {
+            background-color: rgba(124, 81, 217, 0.2);
+            color: #f3f4f6;
+        }
+        
+    </style>
+</head>
+<body class="min-h-screen">
+    
+    <!-- Fixed Background Art and Overlay -->
+    <div class="background-art"></div>
+    <div class="overlay"></div>
+
+    <!-- Toast Message for Actions -->
+    <div id="toast-message" class="fixed z-50 p-3 rounded-xl shadow-2xl bg-green-500 text-white font-semibold flex items-center transition-all duration-300" 
+         style="bottom: 20px; right: 20px; visibility: hidden; opacity: 0;">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span id="toast-text"></span>
+    </div>
+
+    <!-- Sticky Header & Navbar -->
+    <header class="sticky top-0 z-40 py-4 glass-card shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            
+            <!-- Logo/Title: New Deep Sapphire/Purple Gradient -->
+            <div class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-600 tracking-wider">
+                Shayari Explorer
+            </div>
+
+            <!-- Controls and Menu -->
+            <div class="flex items-center space-x-4">
+                
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" title="Toggle Light/Dark Theme" class="p-2 rounded-full glass-card hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <i class="fas fa-sun text-lg dark:hidden text-gray-700"></i>
+                    <i class="fas fa-moon text-lg hidden dark:inline-block text-gray-200"></i>
+                </button>
+
+                <!-- User/Account Button: Now uses the new accent color -->
+                <button id="account-btn" onclick="openLoginModal()" class="py-2 px-4 rounded-full bg-[var(--color-accent)] text-white font-medium hover:bg-purple-700 transition duration-150 shadow-md">
+                    <i class="fas fa-user-circle mr-1"></i> <span id="account-text">Login</span>
+                </button>
+                
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+
+        <!-- NEW: Top Attribution Block -->
+        <div class="text-center top-attribution mb-8">
+            Web page design by <span class="text-[var(--color-primary)] dark:text-[var(--color-accent)] font-extrabold">@Shaifin</span>
+        </div>
+        
+        <!-- NEW: Personalized Welcome Message and Preference Button -->
+        <div id="welcome-container" class="flex items-center justify-between mb-8">
+            
+            <div id="welcome-message" class="text-lg font-medium">
+                <!-- Content set by JavaScript based on stored preference -->
+            </div>
+            
+            <!-- NEW BUTTON to Re-open the Selection Modal -->
+            <button onclick="openReligionModal()" class="py-2 px-3 rounded-full text-xs font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300 transition duration-150 shadow-sm whitespace-nowrap">
+                <i class="fas fa-cog mr-1"></i> Change Greeting
+            </button>
+            
+        </div>
+
+        <!-- Shayari of the Day Section -->
+        <section class="mb-10 text-center">
+            <h2 class="text-3xl font-bold mb-4 text-[var(--color-primary)] dark:text-[var(--color-accent)]">Shayari of the Day</h2>
+            <div id="shayari-of-day" class="glass-card p-6 rounded-2xl max-w-3xl mx-auto shadow-2xl transition duration-500 hover:scale-[1.01] border-l-4 border-[var(--color-accent)]">
+                <!-- CRITICAL FIX: Added light-mode-text-fix class to ensure dark text and appropriate weight -->
+                <p id="sotd-text" class="text-xl italic whitespace-pre-line leading-loose light-mode-text-fix">Loading today's verse...</p>
+                <p id="sotd-poet" class="mt-4 text-lg font-bold text-[var(--color-primary)] dark:text-gray-300">— Poet Name</p>
+            </div>
+        </section>
+
+        <!-- Search and Filter Bar -->
+        <div class="glass-card p-6 rounded-2xl shadow-2xl mb-10">
+            
+            <!-- Search Input with Voice -->
+            <div class="flex items-center space-x-2 mb-6">
+                <div class="flex-grow relative">
+                    <label for="search-input" class="sr-only">Search Shayari</label>
+                    <input type="text" id="search-input" placeholder="Search by line, word, or poet name (English or Urdu)..."
+                           class="w-full p-3 rounded-lg glass-input focus:outline-none pr-12">
+                    <!-- Voice Search Button -->
+                    <button id="voice-search-btn" title="Voice Search" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[var(--color-accent)] transition duration-150">
+                        <i class="fas fa-microphone text-lg" id="mic-icon"></i>
+                    </button>
+                </div>
+                <!-- Search Button uses new primary color -->
+                <button onclick="filterShayaris(true)" class="py-3 px-5 rounded-lg text-white bg-[var(--color-primary)] dark:bg-[var(--color-accent)] hover:bg-opacity-80 transition duration-150 shadow-md h-[48px]">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+            <!-- Filters and Sorting Row -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+
+                <!-- Poet Filter -->
+                <div>
+                    <!-- Label text color increased to text-gray-700 for better contrast -->
+                    <label for="poet-filter" class="block text-xs font-medium mb-1 text-gray-700 dark:text-gray-400">Poet</label>
+                    <select id="poet-filter" class="w-full p-2 rounded-lg glass-input text-sm focus:outline-none cursor-pointer">
+                        <option value="All">All Poets</option>
+                    </select>
+                </div>
+
+                <!-- Language Filter -->
+                <div>
+                     <!-- Label text color increased to text-gray-700 for better contrast -->
+                    <label for="language-filter" class="block text-xs font-medium mb-1 text-gray-700 dark:text-gray-400">Language</label>
+                    <select id="language-filter" class="w-full p-2 rounded-lg glass-input text-sm focus:outline-none cursor-pointer">
+                        <option value="All">Urdu & Roman</option>
+                        <option value="Urdu">Urdu Script</option>
+                        <option value="Roman">Roman Urdu</option>
+                    </select>
+                </div>
+
+                <!-- Mood/Emotion Filter (Using Multiselect) -->
+                <div class="col-span-2 md:col-span-1">
+                     <!-- Label text color increased to text-gray-700 for better contrast -->
+                    <label for="mood-filter" class="block text-xs font-medium mb-1 text-gray-700 dark:text-gray-400">Mood</label>
+                    <select id="mood-filter" class="w-full p-2 rounded-lg glass-input text-sm focus:outline-none cursor-pointer">
+                        <option value="All">All Moods</option>
+                        <!-- Options populated by JS -->
+                    </select>
+                </div>
+
+                <!-- Date Added Filter (Simulated) -->
+                <div>
+                     <!-- Label text color increased to text-gray-700 for better contrast -->
+                    <label for="date-filter" class="block text-xs font-medium mb-1 text-gray-700 dark:text-gray-400">Date Added</label>
+                    <select id="date-filter" class="w-full p-2 rounded-lg glass-input text-sm focus:outline-none cursor-pointer">
+                        <option value="All">All Time</option>
+                        <option value="Last30">Last 30 Days</option>
+                        <option value="Last90">Last 90 Days</option>
+                    </select>
+                </div>
+
+                <!-- Sorting Option -->
+                <div>
+                     <!-- Label text color increased to text-gray-700 for better contrast -->
+                    <label for="sort-by" class="block text-xs font-medium mb-1 text-gray-700 dark:text-gray-400">Sort By</label>
+                    <select id="sort-by" class="w-full p-2 rounded-lg glass-input text-sm focus:outline-none cursor-pointer">
+                        <option value="recent">Most Recent</option>
+                        <option value="alphabetical">Poet (A-Z)</option>
+                        <option value="likes">Popularity (Sim.)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Action Row -->
+            <div class="flex justify-end mt-4 space-x-4">
+                <button onclick="viewFavorites()" class="py-2 px-4 rounded-full text-xs font-semibold bg-red-100 text-red-600 hover:bg-red-200 transition duration-150 shadow-md">
+                    <i class="fas fa-heart mr-1"></i> My Favorites (<span id="fav-count">0</span>)
+                </button>
+                <button onclick="resetAllFilters()" class="py-2 px-4 rounded-full text-xs font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300 transition duration-150 shadow-md">
+                    <i class="fas fa-redo-alt mr-1"></i> Clear Filters
+                </button>
+            </div>
+            
+        </div>
+
+        <!-- Shayari Cards Grid -->
+        <div class="relative min-h-[300px]">
+            <div id="loading-overlay" class="absolute inset-0 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm z-30 flex items-center justify-center rounded-xl hidden">
+                <div class="text-center">
+                    <!-- Spinner color now matches accent -->
+                    <i class="fas fa-spinner fa-spin fa-4x text-[var(--color-accent)]"></i>
+                    <p class="mt-4 text-lg font-semibold text-gray-700 dark:text-gray-300">Searching the depths...</p>
+                </div>
+            </div>
+            
+            <div id="shayari-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Shayari cards will be rendered here -->
+            </div>
+        </div>
+        
+        <!-- Load More Button (New for performance) -->
+        <div id="load-more-container" class="text-center mt-8 hidden">
+             <button onclick="loadMoreShayaris()" id="load-more-btn"
+                     class="py-3 px-8 rounded-full bg-[var(--color-accent)] text-white font-semibold hover:bg-purple-700 transition duration-150 shadow-lg">
+                <i class="fas fa-ellipsis-h mr-2"></i> Load More Shayaris
+            </button>
+            <p id="loaded-info" class="mt-2 text-sm text-gray-700 dark:text-gray-400"></p>
+        </div>
+
+        <!-- No Results Message -->
+        <div id="no-results" class="hidden text-center py-12 text-gray-500 glass-card p-8 rounded-xl mt-10">
+            <i class="far fa-sad-tear fa-3x text-[var(--color-accent)]"></i>
+            <h3 class="text-2xl font-semibold mt-4 text-gray-700 dark:text-gray-200">Poetry Not Found</h3>
+            <p id="no-results-text" class="dark:text-gray-400">No Shayaris matched your current filters. Try resetting or using broader terms.</p>
+        </div>
+        
+    </main>
+    
+    <!-- Footer -->
+    <footer class="mt-10 py-6 text-sm text-center text-gray-600 dark:text-gray-400">
+        &copy; 2025 Shayari Explorer. Designed with elegance and code.
+    </footer>
+
+    <!-- Login/Register Modal (Tailwind CSS based) -->
+    <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4" onclick="if(event.target.id === 'login-modal') closeModal('login')">
+        <div class="glass-card p-8 rounded-xl shadow-2xl max-w-sm w-full bg-[var(--color-light-bg)] dark:bg-[#1f2030]">
+            <h3 class="text-3xl font-bold mb-6 text-center text-[var(--color-primary)] dark:text-[var(--color-accent)]">Account Access</h3>
+            
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="username" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">Username (Dummy)</label>
+                    <input type="text" id="username" value="user" required
+                           class="w-full p-3 rounded-lg glass-input focus:outline-none">
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">Password (Dummy)</label>
+                    <input type="password" id="password" value="pass" required
+                           class="w-full p-3 rounded-lg glass-input focus:outline-none">
+                </div>
+                
+                <button type="submit" class="w-full py-3 rounded-full bg-[var(--color-accent)] text-white font-semibold hover:bg-purple-700 transition duration-150 shadow-lg">
+                    Login / Register
+                </button>
+            </form>
+
+            <button onclick="closeModal('login')" class="w-full mt-3 py-2 rounded-full text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                Close
+            </button>
+        </div>
+    </div>
+    
+<!-- NEW: Religion Selection Modal -->
+    <div id="religion-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-card p-8 rounded-xl shadow-2xl max-w-lg w-full bg-[var(--color-light-bg)] dark:bg-[#1f2030] text-center">
+            <h3 class="text-3xl font-bold mb-4 text-[var(--color-primary)] dark:text-[var(--color-accent)]">A Warm Welcome</h3>
+            <p class="text-gray-700 dark:text-gray-300 mb-6">
+                To offer you a personalized cultural greeting, please select your primary religious or cultural context. This setting is local to your browser.
+            </p>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="handleReligionSelection('Islam')" class="py-3 px-4 rounded-lg text-white font-semibold bg-green-600 hover:bg-green-700 transition duration-150 shadow-md">
+                    <i class="fas fa-star-and-crescent mr-2"></i> Islam
+                </button>
+                <button onclick="handleReligionSelection('Hinduism')" class="py-3 px-4 rounded-lg text-white font-semibold bg-orange-600 hover:bg-orange-700 transition duration-150 shadow-md">
+                    <i class="fas fa-om mr-2"></i> Hinduism
+                </button>
+                <button onclick="handleReligionSelection('Sikhism')" class="py-3 px-4 rounded-lg text-white font-semibold bg-yellow-600 hover:bg-yellow-700 transition duration-150 shadow-md">
+                    <i class="fas fa-hands mr-2"></i> Sikhism
+                </button>
+                <button onclick="handleReligionSelection('Other')" class="py-3 px-4 rounded-lg text-white font-semibold bg-blue-600 hover:bg-blue-700 transition duration-150 shadow-md">
+                    <i class="fas fa-globe-asia mr-2"></i> Other/Secular
+                </button>
+            </div>
+            
+            <button onclick="handleReligionSelection('None')" class="w-full mt-6 py-2 rounded-full text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium">
+                No preference, just proceed
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Application Script -->
+    <script>
+        // --- 1. Data Model (Shayari Content Generation) ---
+        
+        const ALL_POETS = ["Jaun Elia", "Ahmed Faraz", "Mirza Ghalib", "Parveen Shakir", "Rahat Indori", "Gulzar", "Javed Akhtar", "Allama Iqbal", "Mir Taqi Mir"];
+        const ALL_MOODS = ["romantic", "sadness", "wisdom", "friendship", "heartbreak", "hope", "life", "philosophical", "nature", "humor"];
+
+        // Expanded Base Shayari List for higher content volume (~540+ entries)
+        const BASE_SHAYARIS = {
+            "Jaun Elia": [
+                "Kaam mushkil hai magar karna zaroori hai Jaun,\nEk azeem shakhsiyat ka khoon karna zaroori hai.",
+                "Apne sab yaar kaam kar rahe hain,\nAur hum hain ki naam kar rahe hain.",
+                "Tujh se to koi gila nahi, aey Jaun,\nJab ke tu bhi wohi zamana hai.",
+                "Yeh mujhe chain kyun nahin padta,\nEk hi shakhs tha jahaan mein kya.",
+                "Kya batayein ki jaan ab kahan jaati hai,\nBas wohi ek baat hai jo lub pe aati hai.",
+                "Kitne aish se rehte honge kitne itraate honge,\nJaane kaise log woh honge jo us ko bhaate honge.",
+                "Us ne ek baar jo chaha to kya nahi chaha,\nAur phir ye hua ki kuchh bhi use bhaa nahi.",
+                "Shaayad use azeez the aankhon ke khuun ashq,\nShayad use pasand nahi the gulab ke phool.",
+            ],
+            "Ahmed Faraz": [
+                "Ranjish hi sahi, dil hi dukhaane ke liye aa,\nAa phir se mujhe chhod ke jaane ke liye aa.",
+                "Ab ke hum bichhre toh shayed kabhi khwabon mein milen,\nJis tarah sookhe hue phool kitaabon mein milen.",
+                "Suna hai log usse aankh bhar ke dekhte hain,\nSo uske shahar mein kuch din thehar ke dekhte hain.",
+                "Hum bhi kis tarah tujhe khone se darr rahe hain,\nJis tarah log khudaa hone se darr rahe hain.",
+                "Tujh se mile zamaana hua Faraz,\nLekin teri yaad abhi tak hai.",
+                "Kahin wo aa ke mita de na intezaar ka lutf,\nKahin qabool na ho jaye iltija meri.",
+                "Dukh fasana nahi, ki tujh se kahen,\ndil bhi maana nahi, ki tujh se kahen.",
+                "Isi qadar hai ye ehsaan mujh pe kya kam hai,\nki roz-o-shab mujhe tum yaad aate rahte ho."
+            ],
+            "Mirza Ghalib": [
+                "Hazaaron khwahishein aisi ki har khwahish pe dum nikle,\nBohat niklay mere armaan, lekin phir bhi kam nikle.",
+                "Ishq ne 'Ghalib' nikamma kar diya,\nWarna hum bhi aadmi thay kaam ke.",
+                "Hum ko maaloom hai jannat ki haqeeqat lekin,\nDil ke khush rakhne ko 'Ghalib' yeh khayaal achchha hai.",
+                "Aah ko chahiye ek umr asar hone tak,\nKaun jeeta hai teri zulf ke sar hone tak.",
+                "Unke dekhe se jo aa jaati hai moonh par raunaq,\nWoh samajhte hain ki beemaar ka haal achchha hai.",
+                "Bas-ki dushwar hai har kaam ka aasaan hona,\nAadmi ko bhi muyassar nahin insaan hona.",
+                "Rone se aur ishq mein bebaak ho gaye,\nDho'e gaye hum aise ki bas paak ho gaye.",
+                "Ghalib eik roz khush ho kar jo milein ge un se,\nKiya milein ge, yeh sawaal achha hai."
+            ],
+            "Parveen Shakir": [
+                "Karb itna tha ke har rag mein lahoo jamne laga,\nBaat jab us ki judaai ki sunayi us ne.",
+                "Woh to khushboo hai, hawaon mein bikhar jaayega,\nMasla phool ka hai, phool kidhar jaayega.",
+                "Baat to sach hai magar baat hai ruswaai ki,\nAur is sheher mein mahboob tumhara hi nahin.",
+                "Gham-e-hayaat ne rakha na khush gawaar mujhe,\nNa ro saki main, na hansna hi raas aaya mujhe.",
+                "Har shakhs ki nigaah mein, ek masla hoon main,\nJab se shab-e-firaaq mein, aankhein khuli hain meri.",
+                "Aankhon mein jo baat ho gayi hai,\nShayad wahi raat ho gayi hai.",
+                "Shahr dar shahr bhatakti rahi hoon,\nEk rishte ki justjoo mein rahin.",
+                "Kabhi to aao, kabhi to bolo,\nkabhi to tum se hamari baat ho."
+            ],
+            "Rahat Indori": [
+                "Bulati hai magar jaane ka nahi,\nYeh duniya hai idhar jaane ka nahi.",
+                "Aankhon mein paani rakho, honton pe chingaari rakho,\nZinda rehna hai to tarkeeb bahut saari rakho.",
+                "Kabhi akele mein mil kar jhanjhor dunga usse,\nJahan jahan se wo toota hai, jor dunga usse.",
+                "Do ghaz zameen hi sahi, yeh meri milkiyat hai,\nAi maut, tune mujhe zamindaar kar diya.",
+                "Sabhi ka khoon hai shaamil yahan ki mitti mein,\nKisi ke baap ka Hindustan thodi hai.",
+                "Agar khilaaf hain, hone do, jaan thodi hai,\nYeh sab dhuaan hai, koi aasmaan thodi hai.",
+                "Main mar jaaun toh rone waale hazar honge,\nMagar meri fikr karne waala koi nahi hoga.",
+                "Dilon mein aag, labon par gulaab rakhte hain,\nSab apnay chahere par dohrā nikaab rakhte hain."
+            ],
+             "Gulzar": [
+                "Shaam se aankh mein nami si hai,\nAaj phir aap ki kami si hai.",
+                "Badi mushkil se sulaya hai maine khwaabon ko,\nApni aankhon ko ishaara na dena, phir se jag jaayenge.",
+                "Honton pe hansi, aankhon mein nami thi,\nBheegi hui ek hansi, kahani meri thi.",
+                "Tumhara khat mila, khat mein ek baat thi,\nTumne likha hai ki, ab shaam-e-tanhai hai.",
+                "Ek sau sola chaand ki raatein,\nEk tumhaare kaandhe ka til.",
+                "Aadmi musafir hai, aata hai jaata hai,\nAate jaate raste mein, yaadain banaata hai.",
+                "Phoolon ki tarah khushbu mein, yeh hawaa rahti hai,\nTere hi khayal mein, meri har subah rahti hai.",
+                "Mujhe maloom hai, wo shaam kab guzarti hai,\nJab wo aakar ke, chupke se baat karti hai."
+                ],
+            "Javed Akhtar": [
+                "Kuchh to majboorian rahee hongi,\nyuun koi bewafa naheen hota.",
+                "Tumhari yaad se pehle bhi woh lamhe the ke jin mein hum,\nTumhari yaad ke honge, yeh kab socha tha humne.",
+                "Nazar ke samne har dam koi manzar nahi rehta,\nMagar ye kya ki jab dekho koi dilbar nahi rehta.",
+                "Apne hi gham se nahin, woh jo main tanha hoon,\nLog chaaron taraf hain, par koi apna nahin.",
+                "Jo baat tum mein hai, woh kisi mein nahi hoti,\nYe ehsaas dil mein ho to aur baat hoti hai.",
+                "Zindagi dhoop tum ghana saaya,\nTum hi ho bas tum hi khudaaya.",
+                "Main rota hoon to aati hai sadaa is ki,\nKhuda jaane yeh gham kaisa khuda hai.",
+                "Hosh waalon ko khabar kya, bekhudi kya cheez hai,\nIshq kijiye phir samajhiye zindagi kya cheez hai."
+            ],
+            "Allama Iqbal": [
+                "Khudi ko kar buland اتنا ki har taqdeer se pehle,\nKhuda bande se khud pooche bata teri raza kya hai.",
+                "Sitaron se aage jahaan aur bhi hain,\nAbhi ishq ke imtihaan aur bhi hain.",
+                "Tundiye baad-e-mukhalif se na ghabra aey uqaab,\nYeh to chalti hai tujhe ooncha udane ke liye.",
+                "Labaik Labbaik Labbaik Allah,\nIkhtilaaf ho gaya hai, ikhtilaaf ho gaya hai.",
+                "Tu shaheen hai, parwaaz hai kaam tera,\nTere samne aasmaan aur bhi hain.",
+                "Dil ki chataanon mein, aag ho paida,\nKe har ik be-dil ke, dil mein ho ghalghala.",
+                "Nahi hai na-umeed Iqbal apni kisht-e-veeraan se,\nZara num ho to yeh mitti bahut zarkhaiz hai, saqi.",
+                "Masjid toh bana di shab bhar mein imaan ki hararat waalon ne,\nMan apna puraana paapi hai, barson mein namaazi ban na saka."
+            ],
+            "Mir Taqi Mir": [
+                "Patta patta boota boota haal humara jaane hai,\nJaane na jaane gul hi na jaane, baagh to saara jaane hai.",
+                "Mir kya saada hain ki beemar huey jiske sabab,\nUsi attaar ke londey se dawa lete hain.",
+                "Ulti ho gayi sab tadbeerein, kuch na dawa ne kaam kiya,\nDekha is beemari-e-dil ne, aakhir kaam tamaam kiya.",
+                "Shab-e-firaq-e-yaar mein, kaisa hamein mila hai,\nKabhi woh shab, kabhi hum hain, aur kabhi woh subh.",
+                "Ibteda-e-ishq hai rota hai kya,\naage aage dekhiye hota hai kya.",
+                "Dil ki aabadi ki na ummeed kar,\njeetna yeh ujda hai utna phir basey naheen.",
+                "Bahar kya kya karin ki hum se to,\nJaan hi behtar hai be-dardi ki.",
+                "Hasti apni hubaab ki si hai,\nYeh numaa'ish saraab ki si hai."
+            ],
+        };
+        // Function to create a large, simulated dataset (min 60 per poet, 540+ total)
+        const generateShayariData = () => {
+            let data = [];
+            let id = 1;
+            const today = new Date();
+
+            for (const poet of ALL_POETS) {
+                const baseShayaris = BASE_SHAYARIS[poet];
+                const numBaseShayaris = baseShayaris.length;
+                const MIN_COPIES = 60; // We will generate 60 copies of each unique base shayari set
+                
+                for (let i = 0; i < MIN_COPIES; i++) { 
+                    const baseIndex = i % numBaseShayaris;
+                    const baseText = baseShayaris[baseIndex];
+                    
+                    // Assign random date within last 180 days for 'Most Recent' sorting
+                    const dateOffset = Math.floor(Math.random() * 180);
+                    const dateAdded = new Date(today);
+                    dateAdded.setDate(today.getDate() - dateOffset);
+                    
+                    // Simulate random 'likes' for 'Popularity' sorting
+                    const likes = Math.floor(Math.random() * 500) + 50; 
+                    
+                    // Randomly assign one of the ALL_MOODS
+                    const moodIndex = Math.floor(Math.random() * ALL_MOODS.length);
+                    const moods = [ALL_MOODS[moodIndex]];
+
+                    // Alternate language between Urdu and Roman (Simulated)
+                    const lang = i % 2 === 0 ? "Urdu" : "Roman";
+
+                    data.push({ 
+                        id: id++, 
+                        text: baseText.trim(), // Keep the text clean
+                        poet: poet, 
+                        moods: moods, 
+                        language: lang,
+                        dateAdded: dateAdded,
+                        likes: likes
+                    });
+                }
+            }
+            return data;
+        };
+
+        const SHAYARI_DATA = generateShayariData(); // Total will be 9 poets * 60 copies = 540 entries
+        
+        // --- 2. Global State & DOM References ---
+        
+        const SHAYARIS_PER_LOAD = 24; // Increased to 24 for better visibility on larger screens
+        let filteredShayaris = SHAYARI_DATA;
+        let loadedCount = 0; // Tracks how many shayaris have been rendered
+        let isFetching = false; // Prevents race conditions during filter/load
+
+        let SEARCH_INPUT;
+        let POET_FILTER;
+        let LANGUAGE_FILTER;
+        let MOOD_FILTER;
+        let DATE_FILTER;
+        let SORT_BY;
+        let GRID_ELEMENT;
+        let LOADING_OVERLAY;
+        let ACCOUNT_TEXT;
+        let FAV_COUNT_SPAN;
+        let LOAD_MORE_CONTAINER;
+        let LOADED_INFO_TEXT;
+        let WELCOME_MESSAGE_EL;
+
+        let isRecording = false;
+        let loggedInUser = null;
+        
+        /**
+         * Assigns DOM elements to global variables. This MUST be called after the DOM is loaded.
+         */
+        const getDomElements = () => {
+            SEARCH_INPUT = document.getElementById('search-input');
+            POET_FILTER = document.getElementById('poet-filter');
+            LANGUAGE_FILTER = document.getElementById('language-filter');
+            MOOD_FILTER = document.getElementById('mood-filter');
+            DATE_FILTER = document.getElementById('date-filter');
+            SORT_BY = document.getElementById('sort-by');
+            GRID_ELEMENT = document.getElementById('shayari-grid');
+            LOADING_OVERLAY = document.getElementById('loading-overlay');
+            ACCOUNT_TEXT = document.getElementById('account-text');
+            FAV_COUNT_SPAN = document.getElementById('fav-count');
+            LOAD_MORE_CONTAINER = document.getElementById('load-more-container');
+            LOADED_INFO_TEXT = document.getElementById('loaded-info');
+            WELCOME_MESSAGE_EL = document.getElementById('welcome-message');
+        };
+
+        // --- 3. Local Storage and Favorites Logic ---
+
+        const loadFavorites = () => {
+            try {
+                const favorites = JSON.parse(localStorage.getItem('shayariFavorites')) || [];
+                return favorites.map(Number);
+            } catch (e) {
+                console.error("Could not load favorites from localStorage:", e);
+                return [];
+            }
+        };
+
+        const saveFavorites = (favorites) => {
+            localStorage.setItem('shayariFavorites', JSON.stringify(favorites));
+            updateFavoriteCount();
+        };
+
+        const toggleFavorite = (shayariId) => {
+            const id = Number(shayariId);
+            let favorites = loadFavorites();
+            
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(favId => favId !== id);
+                showToast("Removed from Favorites", 'info');
+            } else {
+                favorites.push(id);
+                showToast("Added to Favorites!", 'success');
+            }
+            
+            saveFavorites(favorites);
+            // Re-render to update the heart icon state
+            renderShayaris(false, true); 
+        };
+
+        const isFavorite = (shayariId) => {
+            return loadFavorites().includes(Number(shayariId));
+        };
+        
+        const updateFavoriteCount = () => {
+            if (FAV_COUNT_SPAN) FAV_COUNT_SPAN.textContent = loadFavorites().length;
+        };
+
+        const viewFavorites = () => {
+            // Set the search term to an empty string, then filter
+            resetFiltersToDefaults(false); 
+            POET_FILTER.value = 'All'; // Ensure all filters are off except the implicit favorite filter
+            LANGUAGE_FILTER.value = 'All';
+            MOOD_FILTER.value = 'All';
+            DATE_FILTER.value = 'All';
+            SORT_BY.value = 'recent';
+            filterShayaris(true, true); // Trigger filter in favorite mode
+        };
+        
+        const resetAllFilters = () => {
+             resetFiltersToDefaults(false);
+             filterShayaris(true);
+        };
+        
+        // --- 4. Utility Functions (Toast, Debounce, etc.) ---
+        
+        /**
+         * Returns a function that delays invoking `func` until after `wait` milliseconds
+         * have elapsed since the last time the debounced function was invoked.
+         */
+        const debounce = (func, wait) => {
+            let timeout;
+            return function(...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        };
+
+const showToast = (message, type = 'success') => {
+            const toast = document.getElementById('toast-message');
+            const toastText = document.getElementById('toast-text');
+            
+            if (!toast || !toastText) return; 
+
+            toast.className = 'fixed z-50 p-3 rounded-xl shadow-2xl font-semibold flex items-center transition-all duration-300';
+            
+            if (type === 'success') {
+                toast.classList.add('bg-green-500', 'text-white');
+                toast.querySelector('i').className = 'fas fa-check-circle mr-2';
+            } else if (type === 'info') {
+                toast.classList.add('bg-blue-500', 'text-white');
+                toast.querySelector('i').className = 'fas fa-info-circle mr-2';
+            } else if (type === 'error') {
+                 toast.classList.add('bg-red-500', 'text-white');
+                 toast.querySelector('i').className = 'fas fa-times-circle mr-2';
+            }
+            
+            // Set the text after class change to ensure color contrast is correct
+            toastText.textContent = message;
+
+
+            toast.style.visibility = 'visible';
+            toast.style.opacity = 1;
+            
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                toast.style.opacity = 0;
+                toast.style.visibility = 'hidden';
+            }, 3000);
+        };
+
+        const copyToClipboard = (text) => {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Shayari copied to clipboard!', 'success');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed'; 
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('Shayari copied to clipboard! (Fallback)', 'success');
+                } catch (err) {
+                    console.error('Copy failed:', err);
+                    showToast('Failed to copy text.', 'error');
+                }
+                document.body.removeChild(textarea);
+            });
+        };
+
+        const downloadShayari = (text, poet) => {
+            const fileName = `${poet.replace(/\s/g, '_').toLowerCase()}_shayari.txt`;
+            const content = `Poet: ${poet}\n---\n${text}\n---\n(Downloaded from Shayari Explorer)`;
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('Shayari downloaded successfully!', 'success');
+        };
+
+        const shareShayari = (text, poet) => {
+            const shareData = {
+                title: `Shayari by ${poet}`,
+                text: `${text.split('\n')[0]}... (by ${poet})`,
+                url: window.location.href,
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData)
+                    .then(() => showToast('Shared successfully!', 'success'))
+                    .catch((error) => console.error('Share failed', error));
+            } else {
+                copyToClipboard(`"${text.split('\n')[0]}..." - ${poet} (Shayari Explorer)`);
+                showToast('Share text copied to clipboard!', 'info');
+            }
+        };
+
+        // --- 5. Voice Interaction (TTS & Search) ---
+
+        const speakShayari = (text, poet) => {
+            if (!('speechSynthesis' in window)) {
+                showToast('Text-to-Speech is not supported in your browser.', 'error');
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // Setting lang to Hindi/Urdu provides better voice quality for this content
+            utterance.lang = 'hi-IN'; 
+            utterance.rate = 0.95; 
+            utterance.pitch = 1.05; 
+            
+            window.speechSynthesis.speak(utterance);
+            showToast(`Reading Shayari by ${poet} aloud...`, 'info');
+        };
+
+        const setupVoiceSearch = () => {
+            const voiceBtn = document.getElementById('voice-search-btn');
+            const micIcon = document.getElementById('mic-icon');
+            
+            if (!voiceBtn || !('webkitSpeechRecognition' in window)) {
+                if(voiceBtn) voiceBtn.style.display = 'none';
+                return;
+            }
+
+            const recognition = new webkitSpeechRecognition();
+            recognition.continuous = false; 
+            recognition.interimResults = false;
+            recognition.lang = 'en-US'; 
+
+            voiceBtn.addEventListener('click', () => {
+                if (isRecording) {
+                    recognition.stop();
+                    return;
+                }
+                
+                // Using a custom modal/message box instead of confirm()
+                if (!window.confirm("Start Voice Search? Speak keywords or poet names (try switching your device language to Hindi/Urdu for best poetry search results).")) {
+                    return;
+                }
+
+                recognition.start();
+                isRecording = true;
+                micIcon.classList.remove('text-gray-500', 'hover:text-[var(--color-accent)]');
+                micIcon.classList.add('text-[var(--color-accent)]', 'recording-pulse');
+                SEARCH_INPUT.placeholder = "Listening... Speak now...";
+                
+            });
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                SEARCH_INPUT.value = transcript;
+                showToast(`Voice input: "${transcript}"`, 'info');
+                filterShayaris(true); 
+            };
+
+            recognition.onend = () => {
+                isRecording = false;
+                micIcon.classList.remove('text-[var(--color-accent)]', 'recording-pulse');
+                micIcon.classList.add('text-gray-500', 'hover:text-[var(--color-accent)]');
+                SEARCH_INPUT.placeholder = "Search by line, word, or poet name...";
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                showToast(`Voice Search Error: ${event.error}`, 'error');
+                recognition.onend(); 
+            };
+        };
+
+        // --- 6. Filtering and Sorting Logic (CRITICAL PERFORMANCE SECTION) ---
+        
+        /**
+         * Applies all filters and sorting criteria to the global data set.
+         * @param {boolean} resetLoadCount - If true, resets the loaded count and grid.
+         * @param {boolean} favoriteMode - If true, filters only for favorites.
+         */
+        const filterShayaris = (resetLoadCount = true, favoriteMode = false) => {
+            if (isFetching) return;
+            isFetching = true;
+            
+            try {
+                if (resetLoadCount) {
+                    loadedCount = 0; // Reset pagination index
+                }
+                
+                // Show loading spinner for full filter runs
+                if (resetLoadCount) LOADING_OVERLAY.classList.remove('hidden'); 
+
+                const filters = {
+                    search: SEARCH_INPUT.value.toLowerCase().trim(),
+                    poet: POET_FILTER.value,
+                    language: LANGUAGE_FILTER.value,
+                    mood: MOOD_FILTER.value,
+                    date: DATE_FILTER.value,
+                    sortBy: SORT_BY.value,
+                    favorites: loadFavorites()
+                };
+                
+                // --- Filtering ---
+                let data = SHAYARI_DATA.filter(shayari => {
+                    
+                    if (favoriteMode && !filters.favorites.includes(shayari.id)) {
+                        return false;
+                    }
+                    
+                    if (filters.search) {
+                        const searchArea = `${shayari.text} ${shayari.poet} ${shayari.moods.join(' ')}`.toLowerCase();
+                        if (!searchArea.includes(filters.search)) {
+                            return false;
+                        }
+                    }
+                    
+                    if (filters.poet !== 'All' && shayari.poet !== filters.poet) {
+                        return false;
+                    }
+                    
+                    if (filters.language !== 'All' && shayari.language !== filters.language) {
+                        return false;
+                    }
+                    
+                    if (filters.mood !== 'All' && !shayari.moods.includes(filters.mood)) {
+                        return false;
+                    }
+                    
+                    if (filters.date !== 'All') {
+                        const shayariDate = shayari.dateAdded;
+                        const today = new Date();
+                        let cutOffDate = new Date(today);
+                        
+                        if (filters.date === 'Last30') {
+                            cutOffDate.setDate(today.getDate() - 30);
+                        } else if (filters.date === 'Last90') {
+                            cutOffDate.setDate(today.getDate() - 90);
+                        }
+                        if (shayariDate < cutOffDate) {
+                            return false;
+                        }
+                    }
+                    
+                    return true;
+                });
+                
+                // --- Sorting ---
+                data.sort((a, b) => {
+                    if (filters.sortBy === 'alphabetical') {
+                        return a.poet.localeCompare(b.poet);
+                    } else if (filters.sortBy === 'likes') {
+                        return b.likes - a.likes; 
+                    } else if (filters.sortBy === 'recent') {
+                        return b.dateAdded - a.dateAdded; 
+                    }
+                    return 0;
+                });
+
+                filteredShayaris = data;
+                
+                // Wait for sorting/filtering to finish before rendering (simulated for complex ops)
+                setTimeout(() => {
+                    renderShayaris(resetLoadCount); // Pass true to clear grid on full filter run
+                    LOADING_OVERLAY.classList.add('hidden'); 
+                    isFetching = false;
+                    
+                    // Update no results message
+                    if (favoriteMode && data.length === 0) {
+                        document.getElementById('no-results-text').textContent = "You don't have any favorites yet. Click the heart icon or double-click a Shayari to bookmark it!";
+                    } else {
+                        document.getElementById('no-results-text').textContent = "No Shayaris matched your current filters. Try resetting or using broader terms.";
+                    }
+                }, 100); // Small delay to allow the loading spinner to show
+                
+
+            } catch (error) {
+                console.error("Error during filter process:", error);
+                showToast("A filter error occurred. Check console for details.", 'error');
+                if (LOADING_OVERLAY) LOADING_OVERLAY.classList.add('hidden'); 
+                isFetching = false;
+            }
+        };
+        * Renders the next batch of shayaris based on the loadedCount.
+         * @param {boolean} reset - If true, clears the grid before rendering (used for full filter resets).
+         */
+        const renderShayaris = (reset = false) => {
+             if (!GRID_ELEMENT) return; 
+
+            if (reset) GRID_ELEMENT.innerHTML = '';
+            
+            const totalFiltered = filteredShayaris.length;
+            const start = reset ? 0 : loadedCount;
+            const end = Math.min(start + SHAYARIS_PER_LOAD, totalFiltered);
+
+            if (totalFiltered === 0) {
+                document.getElementById('no-results').classList.remove('hidden');
+                LOAD_MORE_CONTAINER.classList.add('hidden');
+                return;
+            } else {
+                document.getElementById('no-results').classList.add('hidden');
+            }
+
+            // Render the batch
+            let batchHtml = '';
+            for (let i = start; i < end; i++) {
+                const shayari = filteredShayaris[i];
+                batchHtml += createShayariCard(shayari, i);
+            }
+            GRID_ELEMENT.innerHTML += batchHtml;
+
+
+            // Update loaded count only if not reset
+            if (!reset) {
+                loadedCount = end;
+            } else {
+                 loadedCount = end; // If reset, start load count from 0 to end
+            }
+
+            // Manage the Load More button state and text
+            if (loadedCount < totalFiltered) {
+                LOAD_MORE_CONTAINER.classList.remove('hidden');
+                LOADED_INFO_TEXT.textContent = `Showing ${loadedCount} of ${totalFiltered} results.`;
+            } else {
+                LOAD_MORE_CONTAINER.classList.add('hidden');
+                LOADED_INFO_TEXT.textContent = `All ${totalFiltered} results loaded.`;
+            }
+        };
+        
+        // Expose to window for the button click
+        window.loadMoreShayaris = () => {
+             if (loadedCount < filteredShayaris.length && !isFetching) {
+                 renderShayaris(false); // Do not reset the grid, just append
+             }
+        }
+        
+        /**
+         * Generates the HTML for a single Shayari card.
+         */
+        const createShayariCard = (shayari, delayIndex) => {
+            const isFav = isFavorite(shayari.id);
+            const heartClass = isFav ? 'fas fav-active' : 'far hover:text-red-500';
+
+            const moodTag = `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600 dark:bg-purple-900 dark:text-purple-300 shadow-inner capitalize">${shayari.moods[0]}</span>`;
+
+            // Minimal animation delay for smooth entry
+            const delay = (delayIndex % SHAYARIS_PER_LOAD) * 0.05;
+
+            // CRITICAL CHANGE: Added ondblclick handler for favorite toggling
+            return `
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between animate-card-load shadow-lg" 
+                     style="animation-delay: ${delay}s;"
+                     ondblclick="toggleFavorite(${shayari.id})"> 
+                    
+                    <div>
+                        <!-- Poet, Tags, and Language -->
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <p class="font-bold text-lg text-[var(--color-primary)] dark:text-indigo-400">${shayari.poet}</p>
+                                <!-- Text color is still text-gray-700 in light mode, which is dark enough -->
+                                <p class="text-xs text-gray-700 dark:text-gray-300">Added: ${shayari.dateAdded.toLocaleDateString()}</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                ${moodTag}
+                                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-500 text-white shadow-inner">${shayari.language}</span>
+                            </div>
+                        </div>
+
+                        <!-- Shayari Text (CRITICAL FIX: Uses the light-mode-text-fix class for better contrast) -->
+                        <p class="light-mode-text-fix text-base md:text-lg whitespace-pre-line leading-relaxed font-serif italic mb-4">
+                            ${shayari.text}
+                        </p>
+                    </div>
+
+                    <!-- Interaction Features -->
+                    <div>
+                        <div class="flex justify-between items-center border-t pt-3 border-gray-200/50 dark:border-gray-700">
+                            
+                            <!-- Text color is text-gray-700 for good contrast -->
+                            <span class="text-xs text-gray-700 dark:text-gray-400"><i class="fas fa-thumbs-up mr-1"></i> ${shayari.likes}</span>
+
+                            <!-- Action Buttons -->
+                            <div class="flex space-x-4">
+                                
+                                <!-- Favorite Button -->
+                                <button onclick="toggleFavorite(${shayari.id})" 
+                                        class="action-btn" title="Add to Favorites">
+                                    <i class="${heartClass} fa-heart fa-lg transition-colors duration-150"></i>
+                                </button>
+                                
+                                <!-- Voice Read Button: uses the new accent color for hover -->
+                                <button onclick="speakShayari(this.getAttribute('data-text'), this.getAttribute('data-poet'))" 
+                                        data-text="${shayari.text}" data-poet="${shayari.poet}"
+                                        class="action-btn hover:text-[var(--color-accent)]" title="Listen Aloud">
+                                    <i class="fas fa-volume-up fa-lg"></i>
+                                </button>
+
+                                <!-- Copy Button -->
+                                <button onclick="copyToClipboard(this.getAttribute('data-text'))" data-text="${shayari.text}"
+                                        class="action-btn hover:text-green-500" title="Copy to Clipboard">
+                                    <i class="fas fa-copy fa-lg"></i>
+                                </button>
+                                
+                                <!-- Download Button -->
+                                <button onclick="downloadShayari(this.getAttribute('data-text'), this.getAttribute('data-poet'))" 
+                                        data-text="${shayari.text}" data-poet="${shayari.poet}"
+                                        class="action-btn hover:text-blue-500" title="Download as .txt">
+                                    <i class="fas fa-download fa-lg"></i>
+                                </button>
+                                
+                                <!-- Share Button -->
+                                <button onclick="shareShayari(this.getAttribute('data-text'), this.getAttribute('data-poet'))" 
+                                        data-text="${shayari.text}" data-poet="${shayari.poet}"
+                                        class="action-btn hover:text-red-500" title="Share">
+                                    <i class="fas fa-share-alt fa-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+        
+        /**
+         * Fills the Poet and Mood filter dropdowns.
+         */
+        const populateFilters = () => {
+            // 1. Poet Filter
+            const poetOptions = ALL_POETS.map(poet => `<option value="${poet}">${poet}</option>`).join('');
+            if (POET_FILTER) POET_FILTER.innerHTML += poetOptions;
+            
+            // 2. Mood Filter
+            const moodOptions = ALL_MOODS.map(mood => `<option value="${mood}">${mood.charAt(0).toUpperCase() + mood.slice(1)}</option>`).join('');
+            if (MOOD_FILTER) MOOD_FILTER.innerHTML += moodOptions;
+        };
+        
+        // --- 7. Theme Toggle Logic ---
+        const setupThemeToggle = () => {
+            const toggle = document.getElementById('theme-toggle');
+            if (!toggle) return; 
+
+            // Check for previous preference
+            if (localStorage.getItem('theme') === 'dark' || 
+               (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.body.classList.add('dark');
+            } else {
+                document.body.classList.remove('dark');
+            }
+
+            toggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                if (document.body.classList.contains('dark')) {
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+        };
+        
+        // --- 8. Account Modal & State ---
+
+        const openLoginModal = () => {
+            document.getElementById('login-modal').classList.remove('hidden');
+        };
+
+        const closeModal = (type) => {
+            if (type === 'login') {
+                document.getElementById('login-modal').classList.add('hidden');
+            } else if (type === 'religion') {
+                 document.getElementById('religion-modal').classList.add('hidden');
+            }
+        };
+        
+        const handleLogin = (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username && password) {
+                loggedInUser = username;
+                ACCOUNT_TEXT.textContent = loggedInUser;
+                document.getElementById('account-btn').classList.remove('bg-[var(--color-accent)]', 'hover:bg-purple-700');
+                document.getElementById('account-btn').classList.add('bg-green-600', 'hover:bg-green-700');
+                showToast(`Welcome back, ${loggedInUser}!`, 'success');
+                closeModal('login');
+            } else {
+                 showToast('Please enter dummy credentials.', 'error');
+            }
+        };
+
+        // --- 9. Personalized Welcome Logic ---
+        
+        // Updated RELIGION_GREETINGS with Font Awesome icons
+        const RELIGION_GREETINGS = {
+            'Islam': { icon: 'fas fa-star-and-crescent', text: 'Aadaab Arz Hai! Enjoy the finest verses.' },
+            'Hinduism': { icon: 'fas fa-om', text: 'Namaste! May these words bring peace.' },
+            'Sikhism': { icon: 'fas fa-hands', text: 'Sat Sri Akal! Welcome to the world of poetry.' },
+            'Other': { icon: 'fas fa-globe-asia', text: 'Khush Amdeed! Dive into the elegance of Urdu.' },
+            // Fallback for when 'None' or no preference is set
+            'None': { icon: 'fas fa-book-open', text: 'Khush Amdeed! Dive into the elegance of Urdu.' }
+        };
+        // NEW FUNCTION to re-open the modal
+        const openReligionModal = () => {
+             document.getElementById('religion-modal').classList.remove('hidden');
+        };
+
+
+        const handleReligionSelection = (religion) => {
+            // Save the preference
+            localStorage.setItem('userReligionPreference', religion);
+            
+            // Set the greeting on the page
+            setWelcomeMessage(religion);
+            
+            // Close the modal
+            closeModal('religion');
+        };
+        
+        window.handleReligionSelection = handleReligionSelection; // Expose to window for button click
+        window.openReligionModal = openReligionModal; // Expose the new opener function
+
+
+        const setWelcomeMessage = (religion) => {
+            if (WELCOME_MESSAGE_EL) {
+                const data = RELIGION_GREETINGS[religion] || RELIGION_GREETINGS['None'];
+                
+                // Construct the HTML with the icon, making the icon large and purple accent color
+                WELCOME_MESSAGE_EL.innerHTML = `
+                    <i class="${data.icon} text-2xl mr-4 text-[var(--color-accent)]"></i>
+                    <span class="font-bold">${data.text}</span>
+                `;
+                
+                WELCOME_MESSAGE_EL.classList.remove('hidden');
+            }
+        };
+
+        const checkAndShowWelcomeModal = () => {
+            const preference = localStorage.getItem('userReligionPreference');
+            const religionModal = document.getElementById('religion-modal');
+            
+            if (preference) {
+                // If preference exists, display the corresponding greeting
+                setWelcomeMessage(preference);
+                religionModal.classList.add('hidden');
+            } else {
+                // If no preference, show the modal
+                religionModal.classList.remove('hidden');
+            }
+        };
+
+
+        // --- 10. Initialization and Events ---
+        
+        const resetFiltersToDefaults = (keepSearch = false) => {
+            if (!SEARCH_INPUT || !POET_FILTER) return; 
+            
+            if (!keepSearch) SEARCH_INPUT.value = '';
+            POET_FILTER.value = 'All';
+            LANGUAGE_FILTER.value = 'All';
+            MOOD_FILTER.value = 'All';
+            DATE_FILTER.value = 'All';
+            SORT_BY.value = 'recent';
+        };
+
+        const setupEventListeners = () => {
+            if (!POET_FILTER) return; 
+            
+            // Debounced filter handler for inputs/selects to improve performance
+            const debouncedFilter = debounce(() => filterShayaris(true), 300);
+
+            // Global filter change listener
+            [POET_FILTER, LANGUAGE_FILTER, MOOD_FILTER, DATE_FILTER, SORT_BY].forEach(el => {
+                el.addEventListener('change', debouncedFilter);
+            });
+            
+            SEARCH_INPUT.addEventListener('input', debouncedFilter);
+            
+            SEARCH_INPUT.addEventListener('keydown', (e) => {
+                // Allow enter key for immediate search (non-debounced)
+                if (e.key === 'Enter') filterShayaris(true);
+            });
+            
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+        };
+        
+        const setShayariOfTheDay = () => {
+             const sotdIndex = Math.floor(Math.random() * SHAYARI_DATA.length);
+             const sotd = SHAYARI_DATA[sotdIndex];
+             if (document.getElementById('sotd-text')) document.getElementById('sotd-text').textContent = sotd.text;
+             if (document.getElementById('sotd-poet')) document.getElementById('sotd-poet').textContent = `— ${sotd.poet}`;
+        };
+
+
+        const initialize = () => {
+            getDomElements(); // First, get all elements
+            
+            // 1. Setup UI elements
+            populateFilters();
+            setupEventListeners();
+            setupThemeToggle();
+            setupVoiceSearch();
+            setShayariOfTheDay();
+
+            // 2. Handle Welcome Modal
+            checkAndShowWelcomeModal();
+
+            // 3. Load persistent data
+            updateFavoriteCount(); 
+            
+            // 4. Initial content load (resets loadedCount to 0 and renders first batch)
+            filterShayaris(true); 
+        };
+
+        // Initialize on load to ensure DOM is fully ready before script executes
+        window.addEventListener('load', initialize);
+        
+        // Expose functions to window for onclick handlers
+        window.toggleFavorite = toggleFavorite;
+        window.speakShayari = speakShayari;
+        window.copyToClipboard = copyToClipboard;
+        window.downloadShayari = downloadShayari;
+        window.shareShayari = shareShayari;
+        window.filterShayaris = filterShayaris;
+        window.viewFavorites = viewFavorites;
+        window.resetAllFilters = resetAllFilters;
+        window.openLoginModal = openLoginModal;
+        window.closeModal = closeModal;
+    </script>
+</body>
+</html>
